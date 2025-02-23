@@ -69,13 +69,15 @@ async function initializeCluster() {
         const imageUrls = Array.from(document.querySelectorAll("img")).map(
           (img) => img.src
         );
+        
+        return { title, body, imageUrls };
 
-        return { result: { title, body, imageUrls } };
       });
 
       const markdown = await generateMarkdown(extractedData);
-      await redisClient.setEx(url, 86400, markdown);
-      return markdown;
+      const cachedData = JSON.stringify({ markdown, title: extractedData.title });
+      await redisClient.setEx(url, 86400, cachedData);
+      return { markdown, title: extractedData.title  };  
 
     } catch (error) {
       console.error("Error:", error.message);
@@ -113,7 +115,7 @@ async function scrapeWithCheerio(url) {
   }
 
 async function generateMarkdown(data) {
-    const textContent = `${data.result.title}\n\n${data.result.body}\n\n${data.result.imageUrls}`;
+    const textContent = `${data.title}\n\n${data.body}\n\n${data.imageUrls}`;
     const prompt = `You are an AI assistant that converts webpage content to markdown while filtering out unnecessary information. Please follow these guidelines:
     Remove any inappropriate content, ads, or irrelevant information
     If unsure about including something, err on the side of keeping it
@@ -142,7 +144,7 @@ async function generateMarkdown(data) {
       const cachedData = await redisClient.get(url);
       if (cachedData) {
         console.log("Returning cached data");
-        return cachedData;
+        return JSON.parse(cachedData);;
       }
   
       // If Puppeteer fails, fallback to Cheerio
