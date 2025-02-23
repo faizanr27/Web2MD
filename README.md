@@ -1,7 +1,7 @@
 # Web2MD
 
 ## Description
-This project is a web scraping API that uses Puppeteer and Cheerio to extract webpage content, convert it into Markdown, and cache results in Redis for improved performance.
+This project is a web scraper that uses Puppeteer and Cheerio to extract webpage content, convert it into Markdown, and cache results in Redis for improved performance.
 
 ## Features
 - Uses **Puppeteer Cluster** for efficient headless browser scraping
@@ -21,8 +21,8 @@ This project is a web scraping API that uses Puppeteer and Cheerio to extract we
 ## Installation
 1. Clone the repository:
    ```sh
-   git clone https://github.com/yourusername/web-scraper-api.git
-   cd web-scraper-api
+   git clone https://github.com/faizanr27/Web2MD.git
+   cd Web2MD
    ```
 2. Install dependencies:
    ```sh
