@@ -2,9 +2,12 @@ import express from "express";
 import cors from "cors";
 import giveWebsiteInfo from "./utils/scraper.js";
 import 'dotenv/config';
+import os from "os";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const numCPUs = os.cpus().length;
+console.log(numCPUs);
 
 app.use(express.json());
 app.use(cors());
