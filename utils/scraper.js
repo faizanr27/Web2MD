@@ -1,6 +1,5 @@
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import fs from "fs/promises";
 import { Cluster } from 'puppeteer-cluster';
 import os from 'os';
 import 'dotenv/config';
