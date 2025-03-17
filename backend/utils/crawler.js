@@ -6,6 +6,7 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 puppeteer.use(StealthPlugin());
 
 async function Crawler(startUrl, maxPages = 10) {
+  console.log("crawl function called")
   let dataArr = []
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
@@ -63,14 +64,17 @@ async function Crawler(startUrl, maxPages = 10) {
 
         const title = document.title;
         const body = document.body.innerText;
+        const aTag = Array.from(document.querySelectorAll("a")).map(
+          (a) => a.href
+        );
         const imageUrls = Array.from(document.querySelectorAll("img")).map(
           (img) => img.src
         );
 
-        return { title, body, imageUrls };
+        return { title, body, imageUrls, aTag };
 
       });
-      dataArr.push(extractedData)
+      dataArr.push({url, ...extractedData})
 
       await autoScroll(page);
 
@@ -79,14 +83,14 @@ async function Crawler(startUrl, maxPages = 10) {
       });
 
       console.log(`Visited: ${url}`);
-      console.log(dataArr)
+      // console.log(dataArr)
     } catch (err) {
       console.error(`Failed to crawl ${url}:`, err.message);
     }
   }
 
   await browser.close();
-  return [...visited];
+  return dataArr;
 }
 function normalizeUrl(url) {
   try {
@@ -115,7 +119,8 @@ async function autoScroll(page) {
   });
 }
 
-Crawler("https://faizanraza.vercel.app").then((urls) =>
-  console.log("Crawled URLs:", urls)
-);
+// Crawler("https://faizanraza.vercel.app").then((urls) =>
+//   console.log("Crawled URLs:", urls)
+// );
 // console.log(result)
+export default Crawler

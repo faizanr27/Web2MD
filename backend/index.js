@@ -4,11 +4,12 @@ import giveWebsiteInfo from "./utils/scraper.js";
 import 'dotenv/config';
 import os from "os";
 import cluster from "cluster";
+import Crawler from "./utils/crawler.js";
 
 if(cluster.isPrimary){
     const numCPUs = os.cpus().length;
 
-    for (let i = 0; i < numCPUs; i++) {
+    for (let i = 0; i < numCPUs - 2; i++) {
         cluster.fork();
       }
 
@@ -26,11 +27,24 @@ if(cluster.isPrimary){
         app.use(cors());
 
         // Process URL and store embeddings
-        app.post("/process-url", async (req, res) => {
+        app.post("/scrape", async (req, res) => {
             try {
                 const { url } = req.body;
                 if (!url) return res.status(400).json({ error: "URL is required" });
                 const result = await giveWebsiteInfo(url);
+
+                console.log(result);
+
+                res.json({ message: "scraped successfully", url, result });
+            } catch (error) {
+                res.status(500).json({ error: "Internal Server Error", details: error.message });
+            }
+        });
+        app.post("/crawl", async (req, res) => {
+            try {
+                const { url } = req.body;
+                if (!url) return res.status(400).json({ error: "URL is required" });
+                const result = await Crawler(url)
 
                 console.log(result);
 

@@ -120,7 +120,7 @@ async function generateMarkdown(data) {
     const prompt = `You are an AI assistant that converts webpage content to markdown while filtering out unnecessary information. Please follow these guidelines:
     Remove any inappropriate content, ads, or irrelevant information
     If unsure about including something, err on the side of keeping it
-    Answer in English. Include all points in markdown in sufficient detail to be useful.
+    Answer in English. Include all points in markdown in sufficient detail and image links if any to be useful.
     Aim for clean, readable markdown.
     Return the markdown and nothing else.
     Input: ${textContent}
@@ -139,6 +139,7 @@ async function generateMarkdown(data) {
 
   async function giveWebsiteInfo(url) {
     try {
+      console.log('scraper function')
       if (!validUrl(url)) {
         return { error: "Invalid URL" };
       }
