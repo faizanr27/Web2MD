@@ -1,74 +1,72 @@
-# Lenovo 54.61 cm (21.5 inch) Full HD VA Panel Monitor (L22e-40)
- 
+```markdown
+# Faizan Raza - Full Stack Developer
 
- **Response Time:** 4 ms
- **Refresh Rate:** 60 Hz
- 
+## About
 
- **Price:** ₹6,299 (₹9,690 - 34% off)
- 
+A passionate front-end developer dedicated to building high-quality, scalable web applications.
 
- **Rating:** 4.5 (341 Ratings & 47 Reviews)
- 
+[Email](email address removed for privacy) | [GitHub](github link removed for privacy) | [LinkedIn](linkedin link removed for privacy)
 
- ## Highlights
- 
 
- * Panel Type: VA Panel
- * Screen Resolution Type: Full HD
- * Response Time: 4 ms | Refresh Rate: 60 Hz
- 
+## Skills
 
- ## Specifications
- 
+### Languages
 
- ### General
- 
+* TypeScript
+* JavaScript
+* HTML
+* CSS
+* SQL
 
- * **Model Name:** L22e-40
- * **Color:** Grey, Silver
- * **Display:** 54.61 cm (21.5 inch) LED Display
- * **Panel Type:** VA Panel
- * **Screen Resolution Type:** Full HD
- * **Part Number:** 67AFKACBIN
- * **Sales Package:** 1 Monitor, User Manual
- * **Screen Form Factor:** Flat
- 
+### Frameworks
 
- ### Display Features
- 
+* React
+* Node.js
+* Express
+* Next.js
+* Mongoose
+* Tailwind CSS
 
- * **Maximum Refresh Rate:** 60 Hz (Analog), 60 Hz (Digital)
- * **Response Time:** 4 ms
- 
+### Dev Tools
 
- ### Warranty
- 
+* Git
+* GitHub
+* VS Code
+* Firebase
+* Vercel
+* MongoDB
+* PostgreSQL
 
- * **Warranty Summary:** 3 Years Warranty
- * **Covered in Warranty:** Manufacturing Defects
- * **Not Covered in Warranty:** Physical Damages
- * **Domestic Warranty:** 3 Year
- 
 
- ## Frequently Bought Together (Examples)
- 
+## Github Contributions
 
- This section lists items frequently purchased with the monitor.  The specific items and prices may vary.
- 
+493 contributions in the last year
 
- ## Ratings & Reviews (Summary)
- 
 
- The product has mostly positive reviews, praising its value for money and picture quality for the price.  Some users note the VA panel's limitations regarding viewing angles.
- 
+## Projects
 
- ## Seller Information
- 
+### Hive Mind
 
- * **Seller:** TBL Online
- * **Seller Rating:** 4.2
- * **Warranty:** 7 Days Service Center Replacement/Repair
- * **GST Invoice:** Available
+Your personal knowledge hub to store, organize, and retrieve ideas effortlessly. Easily categorize notes, ideas, and files for quick access.
 
- ```
+* **Technologies Used:** React, TypeScript, Tailwind CSS, Node.js, MongoDB, Express.js, Mongoose
+
+### Dev Blog
+
+FullStack Blog App with minimalistic UI.
+
+* **Technologies Used:** React, Tailwind CSS, Node.js, MongoDB, Express.js, Mongoose
+
+### Shortsy
+
+A full-stack URL shortener with JWT authentication and bcrypt for password hashing. Uses MongoDB as the database and features a clean interface with Shadcn UI.
+
+* **Technologies Used:** React.js, Tailwind CSS, Shadcn/ui, Node.js, MongoDB, Express.js, Mongoose
+
+### WEB2MD
+
+This project is a web scraper that uses Puppeteer and Cheerio to extract webpage content, convert it into Markdown, and cache results in Redis for improved performance.
+
+* **Technologies Used:** Node.js, Express, Redis, Puppeteer
+
+```
