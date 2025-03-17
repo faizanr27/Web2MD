@@ -6,7 +6,8 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 puppeteer.use(StealthPlugin());
 
 async function Crawler(startUrl, maxPages = 10) {
-  const browser = await puppeteer.launch({ headless: true });
+  let dataArr = []
+  const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
 
   // Extract the base URL to ensure links stay within the same domain
@@ -58,6 +59,19 @@ async function Crawler(startUrl, maxPages = 10) {
           );
       }, { staticPaths, staticExtensions });
 
+      const extractedData = await page.evaluate(() => {
+
+        const title = document.title;
+        const body = document.body.innerText;
+        const imageUrls = Array.from(document.querySelectorAll("img")).map(
+          (img) => img.src
+        );
+
+        return { title, body, imageUrls };
+
+      });
+      dataArr.push(extractedData)
+
       await autoScroll(page);
 
       [...links, ...dynamicLinks].forEach((link) => {
@@ -65,6 +79,7 @@ async function Crawler(startUrl, maxPages = 10) {
       });
 
       console.log(`Visited: ${url}`);
+      console.log(dataArr)
     } catch (err) {
       console.error(`Failed to crawl ${url}:`, err.message);
     }
@@ -103,4 +118,4 @@ async function autoScroll(page) {
 Crawler("https://faizanraza.vercel.app").then((urls) =>
   console.log("Crawled URLs:", urls)
 );
-
+// console.log(result)
