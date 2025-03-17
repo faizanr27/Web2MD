@@ -5,18 +5,19 @@ import os from 'os';
 import 'dotenv/config';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as cheerio from "cheerio";
-import {createClient} from "redis";
+// import {createClient} from "redis";
 import validUrl from "is-url";
+import fs from 'fs/promises'
 
 puppeteer.use(StealthPlugin());
 
 const genAI = new GoogleGenerativeAI(`${process.env.GEMINI_API_KEY}`);
 const model1 = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-const redisClient = createClient({
-    url: process.env.REDIS_URL,
-  });
-  
-  await redisClient.connect();
+// const redisClient = createClient({
+//     url: process.env.REDIS_URL,
+//   });
+
+//   await redisClient.connect();
 
 let cluster;
 
@@ -35,7 +36,7 @@ async function initializeCluster() {
     if (!validUrl(url)) {
         throw new Error("Invalid URL");
       }
-      
+
     try {
       await page.setRequestInterception(true);
       page.on("request", (req) => {
@@ -68,15 +69,16 @@ async function initializeCluster() {
         const imageUrls = Array.from(document.querySelectorAll("img")).map(
           (img) => img.src
         );
-        
+
         return { title, body, imageUrls };
 
       });
 
       const markdown = await generateMarkdown(extractedData);
       const cachedData = JSON.stringify({ markdown, title: extractedData.title });
-      await redisClient.setEx(url, 86400, cachedData);
-      return { markdown, title: extractedData.title  };  
+      // await redisClient.setEx(url, 86400, cachedData);
+      await fs.writeFile("mark.txt", markdown)
+      return { markdown, title: extractedData.title  };
 
     } catch (error) {
       console.error("Error:", error.message);
@@ -100,11 +102,11 @@ async function scrapeWithCheerio(url) {
       const res = await fetch(url);
       const html = await res.text();
       const $ = cheerio.load(html);
-      
+
       const title = $("title").text();
       const body = $("body").text();
       const imageUrls = $("img").map((_, img) => $(img).attr("src")).get();
-      
+
       const extractedData = {result: { title, body, imageUrls }};
       return await generateMarkdown(extractedData);
     } catch (error) {
@@ -122,11 +124,12 @@ async function generateMarkdown(data) {
     Aim for clean, readable markdown.
     Return the markdown and nothing else.
     Input: ${textContent}
-    Output:\`\`\`markdown\n`;
+    Output:\`\`\`markdown\n `;
 
     try {
 
     const result = await model1.generateContent(prompt);
+    console.log(result.response.candidates[0].content)
       return result.response.candidates[0]?.content.parts[0]?.text || "No summary found";
     } catch (error) {
       console.error("AI summarization failed:", error);
@@ -139,13 +142,13 @@ async function generateMarkdown(data) {
       if (!validUrl(url)) {
         return { error: "Invalid URL" };
       }
-  
-      const cachedData = await redisClient.get(url);
-      if (cachedData) {
-        console.log("Returning cached data");
-        return JSON.parse(cachedData);;
-      }
-  
+
+      // const cachedData = await redisClient.get(url);
+      // if (cachedData) {
+      //   console.log("Returning cached data");
+      //   return JSON.parse(cachedData);;
+      // }
+
       // If Puppeteer fails, fallback to Cheerio
       try {
         return await cluster.execute(url);
@@ -153,13 +156,13 @@ async function generateMarkdown(data) {
         console.error("Puppeteer failed, falling back to Cheerio");
         return await scrapeWithCheerio(url);
       }
-  
+
     } catch (error) {
       console.error("Error in giveWebsiteInfo:", error);
       return { error: error.message };
     }
   }
-  
+
 
   process.on("SIGINT", async () => {
     console.log("🔴 Gracefully shutting down...");
@@ -168,7 +171,7 @@ async function generateMarkdown(data) {
     await redisClient.disconnect();
     process.exit(0);
   });
-  
+
   process.on("exit", async () => {
     if (cluster) {
       await cluster.idle();
@@ -178,5 +181,5 @@ async function generateMarkdown(data) {
       await redisClient.disconnect();
     }
   });
-  
+
 export default giveWebsiteInfo;
