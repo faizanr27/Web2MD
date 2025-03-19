@@ -4,3 +4,4 @@ node_modules
 *.env
 temp.js
 mark.md
+normalize.js

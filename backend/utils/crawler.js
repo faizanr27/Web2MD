@@ -1,14 +1,18 @@
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
-
+import generateMarkdown from './markd.js';
+import { chunkText } from "./chunk.js";
+import { Cluster } from 'puppeteer-cluster';
+import { autoScroll } from "./scroll.js";
+import { normalizeUrl } from "./normalizeUrl.js";
 
 
 puppeteer.use(StealthPlugin());
 
-async function Crawler(startUrl, maxPages = 10) {
+async function Crawler(startUrl, maxPages = 8) {
   console.log("crawl function called")
   let dataArr = []
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
 
   // Extract the base URL to ensure links stay within the same domain
@@ -64,6 +68,9 @@ async function Crawler(startUrl, maxPages = 10) {
 
         const title = document.title;
         const body = document.body.innerText;
+        const clonedBody = document.body.cloneNode(true);
+        clonedBody.querySelectorAll('script, nav, svg').forEach((el) => el.remove());
+
         const aTag = Array.from(document.querySelectorAll("a")).map(
           (a) => a.href
         );
@@ -71,10 +78,21 @@ async function Crawler(startUrl, maxPages = 10) {
           (img) => img.src
         );
 
-        return { title, body, imageUrls, aTag };
+        return { title, body, imageUrls, aTag, html: clonedBody.outerHTML };
 
       });
-      dataArr.push({url, ...extractedData})
+
+      const chunked = chunkText(extractedData.html);
+      let data = '';
+      for (const chunk of chunked) {
+        console.log("serving chunk of size ", new TextEncoder().encode(chunk).length);
+        const markdown = await generateMarkdown(chunk);
+        data += markdown;
+      }
+
+      dataArr.push({ url, title: extractedData.title, markdownData: data });
+
+      // dataArr.push({url, ...extractedData})
 
       await autoScroll(page);
 
@@ -83,7 +101,7 @@ async function Crawler(startUrl, maxPages = 10) {
       });
 
       console.log(`Visited: ${url}`);
-      // console.log(dataArr)
+      // console.log(data);
     } catch (err) {
       console.error(`Failed to crawl ${url}:`, err.message);
     }
@@ -92,35 +110,5 @@ async function Crawler(startUrl, maxPages = 10) {
   await browser.close();
   return dataArr;
 }
-function normalizeUrl(url) {
-  try {
-    const parsedUrl = new URL(url);
-    return parsedUrl.origin + parsedUrl.pathname.replace(/\/$/, ""); // Remove trailing slash
-  } catch {
-    return url; // Return original URL if parsing fails
-  }
-}
-// Auto-scroll function to trigger dynamic content loading
-async function autoScroll(page) {
-  await page.evaluate(async () => {
-    await new Promise((resolve) => {
-      let totalHeight = 0;
-      const distance = 100;
-      const timer = setInterval(() => {
-        window.scrollBy(0, distance);
-        totalHeight += distance;
 
-        if (totalHeight >= document.body.scrollHeight) {
-          clearInterval(timer);
-          resolve();
-        }
-      }, 100);
-    });
-  });
-}
-
-// Crawler("https://faizanraza.vercel.app").then((urls) =>
-//   console.log("Crawled URLs:", urls)
-// );
-// console.log(result)
 export default Crawler
