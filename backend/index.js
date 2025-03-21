@@ -11,7 +11,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const scrapeLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 5, // Limit each IP to 5 requests per minute
+  max: 3, // Limit each IP to 5 requests per minute
   standardHeaders: true,
   legacyHeaders: false,
   message: {
