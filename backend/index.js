@@ -61,7 +61,6 @@ app.post("/crawl", crawlLimiter, async (req, res) => {
     const result = await Crawler(url);
     // console.log(result)
 
-
     res.json({ message: "scraped successfully", url, result });
   } catch (error) {
     res
