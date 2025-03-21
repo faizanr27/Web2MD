@@ -6,27 +6,33 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowUp, Github, GithubIcon, LucideGithub } from "lucide-react";
 import { useState } from "react";
 import ThemeToggle from "@/components/ui/ThemeToggle";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardTitle, CardContent, CardHeader } from "@/components/ui/card";
 
 
-interface crawlData {
+interface crawledData {
   url: string
-  imageurl: []
-  body: string
-  aTag: string | ''
+  markdownData: string
+  title: string | ''
+}
+
+interface OutputData {
+  markdown: string,
+  title: string | '',
+  imageUrls: string[]
 }
 
 export default function Home() {
   const [url, setUrl] = useState("");
-  const [output, setOutput] = useState<string | []>("");
+  const [output, setOutput] = useState<OutputData | crawledData[]| string>('');
 
 
   async function handleScrape() {
     try {
       const response = await axios.post("http://localhost:5000/scrape", {
         url,
-      });
-      setOutput(response.data.result.markdown || "No data found.");
+      }, { timeout: 60000 } );
+      setOutput(response.data.result || "No data found.");
+      setUrl(response.data.url)
     } catch (error) {
       console.error("Error scraping:", error);
       setOutput("Failed to fetch data. Please try again.");
@@ -130,35 +136,56 @@ export default function Home() {
                 </div>
 
                 <h3 className="mb-2 font-medium">Output Preview</h3>
-                {typeof output === "string"
-                ? (<div className="rounded-lg border border-zinc-600/30 dark:border-zinc-200/10 bg-card p-4">
-                  <div className="h-56 rounded-md bg-muted p-2 overflow-y-auto">
-                  <pre className="text-sm text-left text-muted-foreground whitespace-pre-wrap">
-                  {output || "Markdown output will appear here..."}
-                  </pre>
-                  </div>
-                </div>
-                )
-                : <div className="w-container ">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {output.map((item: crawlData, index) => (
-                    <Card key={index} className="border border-zinc-600/30 dark:border-zinc-200/10">
-                      <CardContent className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-500 scrollbar-track-zinc-300">
-                        <div className=" rounded-md bg-muted ">
-                        <CardHeader className="w-full text-left dark:bg-zinc-400/20 bg-slate-200/40">{item?.url}</CardHeader>
-                          <pre className="relative mt-2 px-4 text-sm text-left text-muted-foreground whitespace-pre-wrap">
 
-                            {item?.body}
-                            {item?.aTag}
+                {!Array.isArray(output) && typeof output === 'object' && 'markdown' in output ?
+                 (<div className="w-container">
+                  <div className=" rounded-md bg-muted p-2 ">
+                    <Card className="w-full max-w-md max-h-[500px] flex flex-col border border-zinc-600/30 dark:border-zinc-200/10">
+                      <CardHeader className="flex-shrink-0 border-b border-zinc-600/30 w-full text-left dark:bg-zinc-400/20 bg-slate-200/40">
+                        <CardTitle className="text-md">{output?.title || "Untitled"}</CardTitle>
+                        <CardTitle className="text-sm font-extralight">{url || "URL not available"}</CardTitle>
+                      </CardHeader>
+
+                      <CardContent className="flex-grow overflow-y-scroll p-4 scrollbar-thin scrollbar-thumb-zinc-500 scrollbar-track-transparent">
+                        <div className="rounded-md bg-muted text-left">
+                          <pre className="whitespace-pre-wrap break-words text-sm text-muted-foreground">
+                            {output?.markdown || "Markdown output will appear here..."}
                           </pre>
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
+                  </div>
                 </div>
+                )
+              : Array.isArray(output) ? ( <div className="w-container">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {output.map((item, index) => (
+                  <Card key={index} className="w-full max-w-md h-[500px] flex flex-col border border-zinc-600/30 dark:border-zinc-200/10">
+                    <CardHeader className="flex-shrink-0 border-b border-zinc-600/30 w-full text-left dark:bg-zinc-400/20 bg-slate-200/40">
+                    <CardTitle className="text-md">{item?.title}...</CardTitle>
+                      <CardTitle className="text-sm font-extralight">{item?.url}</CardTitle>
+                    </CardHeader>
+
+                    <CardContent className="flex-grow overflow-y-auto p-4 scrollbar-thin">
+                      <div className="rounded-md bg-muted text-left">
+                        <pre className="whitespace-pre-wrap break-words text-sm text-muted-foreground">
+                          {item?.markdownData}
+                        </pre>
+                      </div>
+                    </CardContent>
+
+
+                  </Card>
+                ))}
+              </div>
+            </div>
+            ) : (
+              // Fallback Case
+              <div className="text-center text-sm text-muted-foreground">
+                No data available
               </div>
 
-                }
+               ) }
               </div>
           </div>
         </section>

@@ -15,7 +15,7 @@
 
 
   .dark {
-    --background: #131313;
+    --background: #0f0f0f;
     --foreground: #ededed;
     --border-light: rgba(229, 229, 229, 0.1);
   }
@@ -25,6 +25,18 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background-color: transparent;
 }
 
 @plugin 'tailwind-scrollbar';
