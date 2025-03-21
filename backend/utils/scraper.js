@@ -29,7 +29,7 @@ async function initializeCluster() {
     maxConcurrency: 2,
     puppeteer,
     puppeteerOptions: {
-      headless: false,
+      headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     },
   });
