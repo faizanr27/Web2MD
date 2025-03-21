@@ -34,37 +34,44 @@ jobs:
       - name: Install dependencies
         run: npm ci || npm install
 
-  # deploy:
-  #   name: Deploy Node.js Application to vps
-  #   runs-on: ubuntu-latest
-  #   needs: build
+  deploy:
+    name: Deploy Node.js Application to vps
+    runs-on: ubuntu-latest
+    needs: build
 
-  #   steps:
-  #     - name: Deploy Nodejs on hostinger
-  #       uses: appleboy/ssh-action@v1.2.2
-  #       with:
-  #         host: ${{ secrets.VPS_HOST}}
-  #         username: ${{ secrets.VPS_USER}}
-  #         key: ${{ secrets.VPS_SSH_KEY}}
-  #         port: 22
-  #         script: |
-  #            set -e
-  #            PROJECT_DIR="Re-useable-archive"
-  #            # Create project directory if it doesn't exist
-  #            if [ ! -d "$PROJECT_DIR" ]; then
-  #               git clone https://github.com/faizanr27/Re-useable-archive.git
-  #            fi
+    steps:
+      - name: Deploy Nodejs on hostinger
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_HOST}}
+          username: ${{ secrets.VPS_USER}}
+          key: ${{ secrets.VPS_SSH_KEY}}
+          port: 22
+          script: |
+             set -e
+             PROJECT_DIR="Web2MD"
+             BACKEND_DIR="$PROJECT_DIR/backend"
+             # Create project directory if it doesn't exist
+             if [ ! -d "$PROJECT_DIR" ]; then
+                git clone --no-checkout https://github.com/faizanr27/Web2MD.git
+                cd "$PROJECT_DIR"
+                git sparse-checkout init --cone
+                git sparse-checkout set backend
+                git checkout main
+             else
+                cd "$PROJECT_DIR"
+                git fetch origin main
+                git pull origin main
+             fi
 
-  #            cd "$PROJECT_DIR"
-  #            git fetch origin main
-  #            git pull origin main
+             # Change to backend directory
+             cd "$BACKEND_DIR"
 
-  #            # Install dependencies
-  #            npm ci || npm install
-  #            npm run build
+             # Install dependencies
+             npm ci || npm install
 
-  #            if pm2 list | grep -q "$PROJECT_DIR"; then
-  #               pm2 restart "$PROJECT_DIR"
-  #            else
-  #               pm2 start dist/index.js --name "$PROJECT_DIR"
-  #            fi
+             if pm2 list | grep -q "$PROJECT_DIR"; then
+                pm2 restart "$PROJECT_DIR"
+             else
+                pm2 start index.js --name "$PROJECT_DIR"
+             fi
