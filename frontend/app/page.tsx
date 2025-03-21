@@ -30,7 +30,7 @@ export default function Home() {
     try {
       const response = await axios.post("https://web2md.shortsy.xyz/scrape", {
         url,
-      } );
+      } , { timeout: 120000 } );
       setOutput(response.data.result || "No data found.");
       setUrl(response.data.url)
     } catch (error) {
@@ -43,7 +43,7 @@ export default function Home() {
     try {
       const response = await axios.post("https://web2md.shortsy.xyz/crawl", {
         url,
-      });
+      }, { timeout: 120000 } );
       console.log(response.data)
       setOutput(response.data.result || "No data found.");
     } catch (error) {
