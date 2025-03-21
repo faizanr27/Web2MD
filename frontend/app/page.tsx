@@ -128,9 +128,6 @@ export default function Home() {
                       </Button>
                     </div>
 
-                    {/* <p className="text-sm text-muted-foreground">
-                      Crawl subpages and extract content
-                    </p> */}
                   </TabsContent>
                 </Tabs>
                 </div>
