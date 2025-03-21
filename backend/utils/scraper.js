@@ -8,11 +8,13 @@ import * as cheerio from "cheerio";
 // import {createClient} from "redis";
 import validUrl from "is-url";
 import fs from 'fs/promises'
+import generateMarkdown from './markd.js';
+import { chunkText } from "./chunk.js";
 
 puppeteer.use(StealthPlugin());
 
-const genAI = new GoogleGenerativeAI(`${process.env.GEMINI_API_KEY}`);
-const model1 = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+// const genAI = new GoogleGenerativeAI(`${process.env.GEMINI_API_KEY}`);
+// const model1 = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 // const redisClient = createClient({
 //     url: process.env.REDIS_URL,
 //   });
@@ -24,10 +26,10 @@ let cluster;
 async function initializeCluster() {
   cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_CONTEXT,
-    maxConcurrency: os.cpus().length,
+    maxConcurrency: 2,
     puppeteer,
     puppeteerOptions: {
-      headless: true,
+      headless: false,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     },
   });
@@ -57,28 +59,34 @@ async function initializeCluster() {
       );
       await page.setViewport({ width: 1280, height: 800 });
 
-      await page.goto(url, { waitUntil: "networkidle0", timeout: 60000 });
+      await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
       await page.evaluate(() => {
         window.scrollBy(0, window.innerHeight / 2);
       });
 
       const extractedData = await page.evaluate(() => {
-
         const title = document.title;
+
         const body = document.body.innerText;
+
+        const clonedBody = document.body.cloneNode(true);
+        clonedBody.querySelectorAll('script, nav, svg').forEach((el) => el.remove());
+
         const imageUrls = Array.from(document.querySelectorAll("img")).map(
           (img) => img.src
         );
 
-        return { title, body, imageUrls };
-
+        return { title, body, imageUrls, html: clonedBody.outerHTML };
       });
+      // console.log(extractedData.html)
+      // await fs.writeFile("mark.txt", extractedData.html);
 
-      const markdown = await generateMarkdown(extractedData);
-      const cachedData = JSON.stringify({ markdown, title: extractedData.title });
+
+      // const cachedData = JSON.stringify({ markdown, title: extractedData.title });
       // await redisClient.setEx(url, 86400, cachedData);
-      await fs.writeFile("mark.txt", markdown)
-      return { markdown, title: extractedData.title  };
+      // console.log(markdown)
+      // await fs.writeFile("mark.txt", markdown)
+      return {title: extractedData.title, body: extractedData.body, html: extractedData.html,imageUrls: extractedData.imageUrls  };
 
     } catch (error) {
       console.error("Error:", error.message);
@@ -107,7 +115,7 @@ async function scrapeWithCheerio(url) {
       const body = $("body").text();
       const imageUrls = $("img").map((_, img) => $(img).attr("src")).get();
 
-      const extractedData = {result: { title, body, imageUrls }};
+      const extractedData = { title, body, imageUrls };
       return await generateMarkdown(extractedData);
     } catch (error) {
       console.error("Cheerio scraping failed:", error);
@@ -115,27 +123,6 @@ async function scrapeWithCheerio(url) {
     }
   }
 
-async function generateMarkdown(data) {
-    const textContent = `${data.title}\n\n${data.body}\n\n${data.imageUrls}`;
-    const prompt = `You are an AI assistant that converts webpage content to markdown while filtering out unnecessary information. Please follow these guidelines:
-    Remove any inappropriate content, ads, or irrelevant information
-    If unsure about including something, err on the side of keeping it
-    Answer in English. Include all points in markdown in sufficient detail and image links if any to be useful.
-    Aim for clean, readable markdown.
-    Return the markdown and nothing else.
-    Input: ${textContent}
-    Output:\`\`\`markdown\n `;
-
-    try {
-
-    const result = await model1.generateContent(prompt);
-    console.log(result.response.candidates[0].content)
-      return result.response.candidates[0]?.content.parts[0]?.text || "No summary found";
-    } catch (error) {
-      console.error("AI summarization failed:", error);
-      return "Error generating markdown";
-    }
-  }
 
   async function giveWebsiteInfo(url) {
     try {
@@ -154,7 +141,7 @@ async function generateMarkdown(data) {
       try {
         return await cluster.execute(url);
       } catch (error) {
-        console.error("Puppeteer failed, falling back to Cheerio");
+        console.error("Puppeteer failed, falling back to Cheerio", error);
         return await scrapeWithCheerio(url);
       }
 
@@ -183,4 +170,5 @@ async function generateMarkdown(data) {
     }
   });
 
-export default giveWebsiteInfo;
+export default giveWebsiteInfo
+// giveWebsiteInfo('https://faizan-raza.vercel.app');

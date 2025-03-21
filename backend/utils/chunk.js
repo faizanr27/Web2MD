@@ -1,7 +1,3 @@
-import fs from 'fs/promises'
-import generateMarkdown from './markd.js';
-
-
 export function chunkText(text, maxBytes = 9000) {
     console.log("called chunk")
   // Input validation
@@ -44,21 +40,26 @@ export function chunkText(text, maxBytes = 9000) {
 }
 
 
-// let r = await fs.readFile('mark.txt',{ encoding: 'utf8' })
+// let r = await fs.readFile('mark.html',{ encoding: 'utf8' })
 
 
 
 // const result = chunkText(r)
 // console.log(result.length)
 // let text = ''
+// let counter = 1
 // for (const chunk of result) {
 //   const sizeInBytes = new TextEncoder().encode(chunk).length;
 //   setTimeout(()=> console.log(sizeInBytes), 2000)
+//   counter++
 
-//   // console.log(chunk)
-//   const res = await generateMarkdown(chunk)
-//   console.log(res)
-//   text += res
+//   console.log(chunk)
 // }
-// await fs.writeFile('test.txt', text)
-// console.log(new TextEncoder().encode(text).length)
+// console.log(counter)
+
+// //   const res = await generateMarkdown(chunk)
+// //   console.log(res)
+// //   text += res
+// // }
+// // await fs.writeFile('test.txt', text)
+// // console.log(new TextEncoder().encode(text).length)

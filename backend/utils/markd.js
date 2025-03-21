@@ -2,12 +2,51 @@
 import 'dotenv/config';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(`${process.env.GEMINI_API_KEY}`);
-const model1 = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+const apiKeys = [
+   process.env.GEMINI_API_KEY_1,
+   process.env.GEMINI_API_KEY_2,
+   process.env.GEMINI_API_KEY_3,
+   process.env.GEMINI_API_KEY_4
+ ];
+
+ let currentIndex = 0;
+
+ function getNextApiKey() {
+   const apiKey = apiKeys[currentIndex];
+   currentIndex = (currentIndex + 1) % apiKeys.length;
+   return apiKey;
+ }
+
+function getModel() {
+   const apiKey = getNextApiKey();
+   const genAI = new GoogleGenerativeAI(`${apiKey}`);
+   const model1 = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+   return model1
+ }
+
+ async function generateResponse(prompt) {
+   const model = getModel();
+   const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: prompt }] }]
+   });
+   return result;
+}
+
+// Testing API Key Rotation
+// (async () => {
+//  for (let i = 1; i <= 10; i++) {
+//    console.log(`serving with api key ${apiKeys[currentIndex]}`)
+//    const res = await generateResponse("Hello Gemini");
+//    console.log(res.text())
+//  }
+// })();
+
+
+// const genAI = new GoogleGenerativeAI(`${process.env.GEMINI_API_KEY}`);
+// const model1 = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
 
 async function generateMarkdown(data) {
-  // console.log(data)
-  // const textContent = `${data.title}\n\n${data.body}\n\n${data.imageUrls}` || data;
+//   console.log(data)
   const prompt = `You are an AI assistant that converts webpage content into clean, readable markdown while preserving all essential information and links.
 
 1. **Preserve Relevant Content**:
@@ -45,9 +84,14 @@ async function generateMarkdown(data) {
 
   try {
 
-  const result = await model1.generateContent(prompt);
-  // console.log(result.response.candidates[0].content.parts[0]?.text)
-    return result.response.candidates[0]?.content.parts[0]?.text || "No summary found";
+   const result = await generateResponse(prompt)
+   const content = result?.response?.candidates?.[0]?.content;
+   const markdown = content?.parts?.[0]?.text || content?.text || "No summary found";
+//   const result = await model1.generateContent(prompt);
+//   const content = result?.response?.candidates?.[0]?.content;
+//   console.log(content)
+//   const markdown = content?.parts?.[0]?.text || content?.text || "No summary found";
+  return markdown;
   } catch (error) {
     console.error("AI summarization failed:", error);
     return "Error generating markdown";

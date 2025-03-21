@@ -4,6 +4,8 @@ import giveWebsiteInfo from "./utils/scraper.js";
 import "dotenv/config";
 import Crawler from "./utils/crawler.js";
 import rateLimit from "express-rate-limit";
+import { Mark } from "./utils/scrapeMark.js";
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,7 +33,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://rj7qd65n-3000.inc1.devtunnels.ms",
+      "https://web2-md.vercel.app/",
     ],
   })
 );
@@ -41,11 +43,11 @@ app.post("/scrape", scrapeLimiter, async (req, res) => {
   try {
     const { url } = req.body;
     if (!url) return res.status(400).json({ error: "URL is required" });
-    const result = await giveWebsiteInfo(url);
+    const data = await giveWebsiteInfo(url);
+    const markdown = await Mark(data.html)
+    // console.log(markdown);
 
-    // console.log(result);
-
-    res.json({ message: "scraped successfully", url, result });
+    res.json({ message: "scraped successfully", url, result: {markdown, title: data.title, imageUrls: data.imageUrls} });
   } catch (error) {
     res
       .status(500)
