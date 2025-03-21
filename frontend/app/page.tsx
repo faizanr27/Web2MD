@@ -28,9 +28,9 @@ export default function Home() {
 
   async function handleScrape() {
     try {
-      const response = await axios.post("http://localhost:5000/scrape", {
+      const response = await axios.post("https://web2md.shortsy.xyz/scrape", {
         url,
-      }, { timeout: 60000 } );
+      } );
       setOutput(response.data.result || "No data found.");
       setUrl(response.data.url)
     } catch (error) {
@@ -41,7 +41,7 @@ export default function Home() {
 
   async function handleCrawl() {
     try {
-      const response = await axios.post("http://localhost:5000/crawl", {
+      const response = await axios.post("https://web2md.shortsy.xyz/crawl", {
         url,
       });
       console.log(response.data)
