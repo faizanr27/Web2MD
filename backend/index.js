@@ -33,7 +33,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://web2-md.vercel.app/",
+      "https://web2-md.vercel.app",
     ],
   })
 );
@@ -42,6 +42,7 @@ app.use(
 app.post("/scrape", scrapeLimiter, async (req, res) => {
   try {
     const { url } = req.body;
+    console.log(url)
     if (!url) return res.status(400).json({ error: "URL is required" });
     const data = await giveWebsiteInfo(url);
     const markdown = await Mark(data.html)

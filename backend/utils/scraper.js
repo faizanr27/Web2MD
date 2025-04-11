@@ -24,15 +24,18 @@ puppeteer.use(StealthPlugin());
 let cluster;
 
 async function initializeCluster() {
-  cluster = await Cluster.launch({
-    concurrency: Cluster.CONCURRENCY_CONTEXT,
-    maxConcurrency: 2,
-    puppeteer,
-    puppeteerOptions: {
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    },
-  });
+    if (cluster) return; // Avoid re-initialization
+    console.log("Initializing Puppeteer Cluster...");
+    try {
+        cluster = await Cluster.launch({
+            concurrency: Cluster.CONCURRENCY_CONTEXT,
+            maxConcurrency: 2,
+            puppeteer,
+            puppeteerOptions: {
+                headless: true,
+                args: ["--no-sandbox", "--disable-setuid-sandbox"],
+            },
+        });
 
   cluster.task(async ({ page, data: url }) => {
     if (!validUrl(url)) {
@@ -88,22 +91,27 @@ async function initializeCluster() {
       // await fs.writeFile("mark.txt", markdown)
       return {title: extractedData.title, body: extractedData.body, html: extractedData.html,imageUrls: extractedData.imageUrls  };
 
+} catch (error) {
+                console.error("Error in Puppeteer task:", error);
+                return { error: error.message };
+            }
+        });
+
+        console.log("✅ Puppeteer Cluster Initialized");
     } catch (error) {
-      console.error("Error:", error.message);
-      return { error: error.message };
-    } finally {
-      if (page) {
-        try {
-          if (page && !page.isClosed()) await page.close();
-        } catch (err) {
-          console.error("❌ Error closing page:", err.message);
-        }
-      }
+        console.error("❌ Cluster initialization failed:", error);
+        cluster = null;
     }
-  });
 }
 
-await initializeCluster().catch((err) => console.error("Cluster initialization failed:", err));
+(async () => {
+    try {
+        await initializeCluster();
+    } catch (err) {
+        console.error("Cluster initialization failed:", err);
+    }
+})();
+//await initializeCluster().catch((err) => console.error("Cluster initialization failed:", err));
 
 async function scrapeWithCheerio(url) {
     try {
@@ -130,6 +138,10 @@ async function scrapeWithCheerio(url) {
       if (!validUrl(url)) {
         return { error: "Invalid URL" };
       }
+        if (!cluster) {
+            console.error("Cluster is not initialized.");
+            return await scrapeWithCheerio(url);
+        }
 
       // const cachedData = await redisClient.get(url);
       // if (cachedData) {
@@ -139,6 +151,7 @@ async function scrapeWithCheerio(url) {
 
       // If Puppeteer fails, fallback to Cheerio
       try {
+	console.log(url)
         return await cluster.execute(url);
       } catch (error) {
         console.error("Puppeteer failed, falling back to Cheerio", error);
@@ -172,3 +185,4 @@ async function scrapeWithCheerio(url) {
 
 export default giveWebsiteInfo
 // giveWebsiteInfo('https://faizan-raza.vercel.app');
+
