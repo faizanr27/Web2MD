@@ -8,6 +8,7 @@ import { Mark } from "./utils/scrapeMark.js";
 
 
 const app = express();
+app.set('trust proxy', true);
 const PORT = process.env.PORT || 5000;
 const scrapeLimiter = rateLimit({
   windowMs: 60 * 1000,
